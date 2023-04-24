@@ -25,7 +25,7 @@ def start_command(update: Update,context):
                                     'This is a list of all the command that You need to know, you can enter it with or without ( / ): \n'
                                     '1. start \n'
                                     '2. links\n'
-                                    '3. download ex. download https://youtu.be/....... (for pc)\n'
+                                    '3. download ex. download https://youtu.be/.......\n'
                                     '4. help\n')
 @run_async
 def Links(update: Update,context):
@@ -52,14 +52,14 @@ def youtube_url_validation(url):
 def Youtube_download(update: Update,context):
 
 
-    update.message.reply_text('download ex. download https://youtu.be/....... (for pc)')
+    update.message.reply_text('download ex. download https://youtu.be/.......')
 
 @run_async
 def help(update: Update,context):
      update.message.reply_text(' This is a list of all the command that You need to know, you can enter it with or without ( / ): \n'
                                     '1. start \n'
                                     '2. links\n'
-                                    '3. download ex. download https://youtu.be/....... (for pc)\n'
+                                    '3. download ex. download https://youtu.be/.......\n'
                                     '4. help\n')
 # Responses
 @run_async
