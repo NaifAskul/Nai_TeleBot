@@ -76,6 +76,7 @@ def handle_Response (text : str,update: Update , context) -> str:
 
 
             command = ['yt-dlp','-f ""best[height<=720]""','-g',url]
+	    update.message.reply_text('Downloading....')
             result =  subprocess.run(command,stdout=PIPE,universal_newlines=True,shell=True)
             title = urllib.parse.quote_plus(Title)
             linktoSend : str = result.stdout + "&title="+title
