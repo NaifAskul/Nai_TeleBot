@@ -71,7 +71,7 @@ def help(update: Update,context):
 def handle_Response (text : str,update: Update , context) -> str:
 
 
-    if len(text) > 8 and text[0:8].lower() == 'download' and youtube_url_validation(text[8:].strip(),update) is not None :
+    if len(text) > 8 and text[0:8].lower() == 'download' and youtube_url_validation(text[8:].strip(),update) :
 
         url = text[8:].strip()
         try:
