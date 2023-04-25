@@ -17,6 +17,7 @@ BOT_Username = os.environ['BOT_USERNAME']
 
 #Commands
 
+
 @run_async
 def start_command(update: Update,context):
     update.message.reply_text('Hello! I`m Nai, i can display links and download from youtube. Enter name of Service that you want! or enter help to know what are the available services.'
@@ -31,26 +32,30 @@ def start_command(update: Update,context):
 def Links(update: Update,context):
 
      update.message.reply_text("""Links list : \n
-	<a href='https://github.com/NaifAskul/Nai_TeleBot'>My Github</a> 
+	<a href='https://github.com/NaifAskul/Nai_TeleBot'>My Github</a>
 	\n """,ParseMode.HTML)
 
 @run_async
-def youtube_url_validation(url):
+def youtube_url_validation(url,update : Update):
     youtube_regex = (
         r'(https?://)?(www\.)?'
         '(youtube|youtu|youtube-nocookie)\.(com|be)/'
         '(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})')
 
-    youtube_regex_match = re.match(youtube_regex, url)
+    youtube_regex_match = re.match(youtube_regex, url,re.IGNORECASE)
 
-    if youtube_regex_match:
-        return youtube_regex_match
+    # Use the regex pattern to check if the link is a valid YouTube video link
+    if youtube_regex_match is not None:
 
-    return youtube_regex_match
+        return True
+
+    else:
+        update.message.reply_text("Not a valid YouTube video link. Enter download to know more.")
+
+        return False
 
 @run_async
 def Youtube_download(update: Update,context):
-
 
     update.message.reply_text('download ex. download https://youtu.be/.......')
 
@@ -65,19 +70,19 @@ def help(update: Update,context):
 @run_async
 def handle_Response (text : str,update: Update , context) -> str:
 
-    if (len(text) > 8 and text[0:8] == 'download'):
+
+    if len(text) > 8 and text[0:8].lower() == 'download' and youtube_url_validation(text[8:].strip(),update) is not None :
 
         url = text[8:].strip()
         try:
-
             with YoutubeDL() as ydl:
                 info_dict = ydl.extract_info(url, download=False)
                 Title = info_dict.get('title',None)
 
 
             command = ['yt-dlp','-f ""best[height<=720]""','-g',url]
-	    update.message.reply_text('Downloading....')
-            result =  subprocess.run(command,stdout=PIPE,universal_newlines=True,shell=True)
+            update.message.reply_text('Downloading....')
+            result =  subprocess.run(command,stdout=PIPE,universal_newlines=True)
             title = urllib.parse.quote_plus(Title)
             linktoSend : str = result.stdout + "&title="+title
 
@@ -93,7 +98,7 @@ def handle_Response (text : str,update: Update , context) -> str:
 
             print("Error: " + str(e))
     else:
-        return 'Sorry, i do not understand what you wrote. Please Enter help to know what are the available services.'
+        update.message.reply_text('Sorry, i do not understand what you wrote. Please Enter help to know what are the available services.')
     return ''
 
 @run_async
