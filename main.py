@@ -31,26 +31,84 @@ def start_command(update: Update,context):
 def Links(update: Update,context):
 
      update.message.reply_text("""Links list : \n
-	<a href='https://github.com/NaifAskul/Nai_TeleBot'>My Github</a> 
+	<a href='https://github.com/NaifAskul/Nai_TeleBot'>My Github</a>
 	\n """,ParseMode.HTML)
 
 @run_async
-def youtube_url_validation(url):
-    youtube_regex = (
+def youtube_url_validation(url,update : Update,text):
+
+    youtube_vid_Shorts_regex = (
         r'(https?://)?(www\.)?'
         '(youtube|youtu|youtube-nocookie)\.(com|be)/'
         '(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})')
 
-    youtube_regex_match = re.match(youtube_regex, url)
+    youtube_list_regex = (r'(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:playlist|watch)\?(?:.*&)?list=([\w-]+)')
 
-    if youtube_regex_match:
-        return youtube_regex_match
 
-    return youtube_regex_match
+    vid_Shorts_regex_match = re.match(youtube_vid_Shorts_regex, url,re.IGNORECASE)
+
+    youtube_list_regex_match = re.match(youtube_list_regex,url,re.IGNORECASE)
+
+
+
+    try:
+        # Use the regex pattern to check if the link is a valid YouTube video link
+        if vid_Shorts_regex_match is not None:
+
+            with YoutubeDL() as ydl:
+                info_dict = ydl.extract_info(url, download=False)
+                Title = info_dict.get('title', None)
+
+            Videos = ['yt-dlp', '-f ""best[height>=720]""', '-g', url]
+
+            update.message.reply_text('Downloading....')
+            result = subprocess.run(Videos, stdout=PIPE, universal_newlines=True)
+            title = urllib.parse.quote_plus(Title)
+            linktoSend: str = result.stdout + "&title=" + title
+
+            keyboard = [[InlineKeyboardButton(" Download ", url=linktoSend)], ]
+
+            reply_markup: InlineKeyboardMarkup = InlineKeyboardMarkup(keyboard)
+
+            update.message.reply_text('Click Download to download ' + url, reply_markup=reply_markup)
+
+        elif youtube_list_regex_match is not None:
+
+            playlists = [url]
+
+            for playlist in playlists:
+
+                with YoutubeDL() as ydl:
+
+                    playlist_dict = ydl.extract_info(url, download=False)
+
+                for video in playlist_dict['entries']:
+
+                    Title = video['title']
+                    URL = video['webpage_url']
+
+                    Videos = ['yt-dlp', '-f ""best[height>=720]""','-g', URL]
+                    update.message.reply_text('Downloading....')
+                    result = subprocess.run(Videos, stdout=PIPE, universal_newlines=True)
+                    title = urllib.parse.quote_plus(Title)
+                    linktoSend: str = result.stdout + "&title=" + title
+
+                    keyboard = [[InlineKeyboardButton(" Download ", url=linktoSend)], ]
+
+                    reply_markup: InlineKeyboardMarkup = InlineKeyboardMarkup(keyboard)
+
+                    update.message.reply_text('Click Download to download ' + URL, reply_markup=reply_markup)
+
+        else:
+            update.message.reply_text("Not a valid YouTube video link. Enter download to know more.")
+
+    except Exception as e:
+
+        print("Error: " + str(e))
+
 
 @run_async
 def Youtube_download(update: Update,context):
-
 
     update.message.reply_text('download ex. download https://youtu.be/.......')
 
@@ -65,35 +123,13 @@ def help(update: Update,context):
 @run_async
 def handle_Response (text : str,update: Update , context) -> str:
 
-    if (len(text) > 8 and text[0:8] == 'download'):
 
-        url = text[8:].strip()
-        try:
+    if len(text) > 8 and text[0:8].lower() == 'download':
 
-            with YoutubeDL() as ydl:
-                info_dict = ydl.extract_info(url, download=False)
-                Title = info_dict.get('title',None)
+        youtube_url_validation(text[8:].strip(), update, text)
 
-
-            command = ['yt-dlp','-f ""best[height<=720]""','-g',url]
-	    update.message.reply_text('Downloading....')
-            result =  subprocess.run(command,stdout=PIPE,universal_newlines=True,shell=True)
-            title = urllib.parse.quote_plus(Title)
-            linktoSend : str = result.stdout + "&title="+title
-
-            keyboard = [[InlineKeyboardButton(" Download ", url=linktoSend)],]
-
-            reply_markup : InlineKeyboardMarkup = InlineKeyboardMarkup(keyboard)
-
-
-            update.message.reply_text('Click Download to download '+url,reply_markup = reply_markup)
-
-
-        except Exception as e:
-
-            print("Error: " + str(e))
     else:
-        return 'Sorry, i do not understand what you wrote. Please Enter help to know what are the available services.'
+        update.message.reply_text('Sorry, i do not understand what you wrote. Please Enter help to know what are the available services.')
     return ''
 
 @run_async
@@ -103,8 +139,6 @@ def handle_message(update: Update , context):
     text: str = update.message.text
 
     print(f'User : ({update.message.chat.id}) in {message_type} : {text}')
-
-
 
     if message_type == 'group':
         if  BOT_Username in text:
