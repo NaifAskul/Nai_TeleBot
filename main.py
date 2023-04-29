@@ -59,7 +59,7 @@ def youtube_url_validation(url,update : Update,text):
                 info_dict = ydl.extract_info(url, download=False)
                 Title = info_dict.get('title', None)
 
-            Videos = ['yt-dlp', '-f ""best[height>=720]""', '-g', url]
+            Videos = ['yt-dlp', '-f ''best'' ', '-g', url]
 
             update.message.reply_text('Downloading....')
             result = subprocess.run(Videos, stdout=PIPE, universal_newlines=True)
@@ -87,7 +87,7 @@ def youtube_url_validation(url,update : Update,text):
                     Title = video['title']
                     URL = video['webpage_url']
 
-                    Videos = ['yt-dlp', '-f ""best[height>=720]""','-g', URL]
+                    Videos = ['yt-dlp', '-f ''best'' ','-g', URL]
                     update.message.reply_text('Downloading....')
                     result = subprocess.run(Videos, stdout=PIPE, universal_newlines=True)
                     title = urllib.parse.quote_plus(Title)
